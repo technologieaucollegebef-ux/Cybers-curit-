@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberAgent Collège - Mission Cybersécurité</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- html2pdf.js CDN pour la génération directe de fichiers PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            blue: '#00f0ff',
+                            purple: '#7000ff',
+                            pink: '#ff007f',
+                            green: '#00ff66',
+                            yellow: '#ffe600',
+                            dark: '#0a0e17'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .cyber-glass {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+        }
+        .cyber-border-glow {
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+        }
+        .cyber-border-glow-green {
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3);
+        }
+        .cyber-border-glow-red {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+        }
+
+        /* FEUILLE DE STYLE IMPRESSION DIPLOME */
+        @media print {
+            body {
+                background: white !important;
+                color: #0f172a !important;
+            }
+            header, footer, #modal-glossary, .screen-view:not(#screen-exam), #exam-quiz-container, nav {
+                display: none !important;
+            }
+            main {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            #screen-exam {
+                display: block !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            #certificate-container {
+                display: block !important;
+                background: white !important;
+                color: #0f172a !important;
+                border: 4px double #d97706 !important;
+                box-shadow: none !important;
+                padding: 2rem !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+                max-width: 800px !important;
+            }
+            #certificate-container * {
+                color: #0f172a !important;
+                text-shadow: none !important;
+                -webkit-background-clip: unset !important;
+                background-clip: unset !important;
+            }
+            #cert-agent-name {
+                color: #0284c7 !important;
+                font-size: 2.25rem !important;
+                font-weight: 900 !important;
+            }
+            .cert-badge-box {
+                background: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #1e293b !important;
+            }
+            .cert-badge-box i {
+                color: #0284c7 !important;
+            }
+            .no-print, .no-print * {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col font-sans overflow-x-hidden select-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black text-slate-100">
+
+    <!-- Sound FX Synthesizer Script -->
+    <script>
+        class SoundEngine {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type, duration, vol=0.1) {
+                if (!this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+            click() { this.playTone(800, 'sine', 0.05, 0.05); }
+            success() {
+                if (!this.ctx) return;
+                this.playTone(523.25, 'triangle', 0.1, 0.1); // C5
+                setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.1), 80); // E5
+                setTimeout(() => this.playTone(783.99, 'triangle', 0.2, 0.15), 160); // G5
+            }
+            error() {
+                if (!this.ctx) return;
+                this.playTone(180, 'sawtooth', 0.15, 0.1);
+                setTimeout(() => this.playTone(140, 'sawtooth', 0.25, 0.12), 120);
+            }
+            fanfare() {
+                if (!this.ctx) return;
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    setTimeout(() => this.playTone(freq, 'square', 0.2, 0.1), idx * 120);
+                });
+            }
+        }
+        const sfx = new SoundEngine();
+    </script>
+
+    <!-- Top Navigation Header -->
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showScreen('screen-dashboard')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/30 text-slate-950 font-black text-xl">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold tracking-wider text-base md:text-lg text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-400">
+                        CYBER-AGENT <span class="text-xs px-2 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-mono">5e/4e</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Technologie au Collège • Protection Numérique</p>
+                </div>
+            </div>
+
+            <!-- Global Score & Badges Bar -->
+            <div class="flex items-center space-x-4">
+                <div id="player-profile-badge" class="hidden flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-full text-xs">
+                    <span id="player-avatar-icon" class="text-cyan-400"><i class="fa-solid fa-user-astronaut"></i></span>
+                    <span id="player-name-display" class="font-bold text-slate-200">Recrue</span>
+                </div>
+                <div class="flex items-center space-x-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1.5 rounded-full font-mono text-sm font-bold">
+                    <i class="fa-solid fa-star text-amber-400"></i>
+                    <span id="global-score">0 XP</span>
+                </div>
+                <button onclick="toggleGlossaryModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-cyan-400 transition" title="Fiche Mémo du Cours">
+                    <i class="fa-solid fa-book-bookmark text-base"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 flex flex-col justify-center">
+
+        <!-- SCREEN 0: WELCOME & PROFILES -->
+        <section id="screen-welcome" class="screen-view transition-all duration-300">
+            <div class="max-w-2xl mx-auto text-center space-y-8 my-auto py-8">
+                <div class="relative inline-block">
+                    <div class="absolute -inset-1 rounded-full bg-gradient-to-r from-cyan-500 to-indigo-500 blur-lg opacity-75 animate-pulse-glow"></div>
+                    <div class="relative w-28 h-28 mx-auto rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-5xl text-cyan-400 shadow-2xl">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <h2 class="text-3xl md:text-5xl font-black tracking-tight text-white">
+                        Mission <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-400">Cyber-Protection</span>
+                    </h2>
+                    <p class="text-slate-300 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+                        Bienvenue dans l'Académie Cyber ! En tant que collégien connecté, apprends à protéger tes données, sécuriser tes mots de passe et déjouer les pièges d'Internet.
+                    </p>
+                </div>
+
+                <!-- Registration Card -->
+                <div class="cyber-glass p-6 rounded-2xl max-w-md mx-auto space-y-5 text-left border border-slate-800 shadow-xl">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Identifiant de l'Agent</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                                <i class="fa-solid fa-id-badge"></i>
+                            </span>
+                            <input type="text" id="input-agent-name" placeholder="Ex: Alex_5B ou CyberAdo" 
+                                   class="w-full pl-10 pr-4 py-3 bg-slate-950 border border-slate-700 rounded-xl focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 text-white placeholder-slate-500 font-medium text-sm outline-none transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Choisis ton Avatar</label>
+                        <div class="grid grid-cols-4 gap-3" id="avatar-selector">
+                            <button onclick="selectAvatar('astronaut', this)" class="avatar-btn p-3 rounded-xl border-2 border-cyan-400 bg-cyan-950/40 text-cyan-400 text-2xl hover:scale-105 transition flex justify-center items-center">
+                                <i class="fa-solid fa-user-astronaut"></i>
+                            </button>
+                            <button onclick="selectAvatar('ninja', this)" class="avatar-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-2xl hover:scale-105 transition flex justify-center items-center">
+                                <i class="fa-solid fa-user-ninja"></i>
+                            </button>
+                            <button onclick="selectAvatar('robot', this)" class="avatar-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-2xl hover:scale-105 transition flex justify-center items-center">
+                                <i class="fa-solid fa-robot"></i>
+                            </button>
+                            <button onclick="selectAvatar('secret', this)" class="avatar-btn p-3 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 text-2xl hover:scale-105 transition flex justify-center items-center">
+                                <i class="fa-solid fa-user-secret"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button onclick="startGame()" class="w-full py-4 rounded-xl font-extrabold text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-400 to-indigo-400 hover:opacity-95 shadow-lg shadow-cyan-500/25 transition transform active:scale-98 flex items-center justify-center space-x-2 text-base">
+                        <span>LANCER LA MISSION</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 1: DASHBOARD / MISSION SELECT -->
+        <section id="screen-dashboard" class="screen-view hidden space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
+                <div>
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <span>Tableau de Bord des Missions</span>
+                    </h2>
+                    <p class="text-slate-400 text-sm">Complète les 4 modules pour passer l'Examen Final et obtenir ton Diplôme de Cybersécurité !</p>
+                </div>
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <div class="flex-1 md:w-48 bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                        <div id="overall-progress-bar" class="bg-gradient-to-r from-cyan-400 to-green-400 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <span id="overall-progress-text" class="font-mono text-xs text-cyan-400 font-bold">0/4 Completed</span>
+                </div>
+            </div>
+
+            <!-- Grid of Missions -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                
+                <!-- Mission 1 Card -->
+                <div onclick="launchMission(1)" class="cyber-glass p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 transition cursor-pointer group relative overflow-hidden flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-950 border border-cyan-500/30 text-cyan-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                        </div>
+                        <span id="m1-badge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">En attente</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-cyan-400 uppercase tracking-widest">Module 1</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-cyan-300 transition">Détective des Données</h3>
+                        <p class="text-slate-400 text-xs mt-1">Distingue tes informations personnelles de tes traces numériques (cookies, géo...).</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400">
+                        <span><i class="fa-solid fa-coins text-amber-400 mr-1"></i> +100 XP</span>
+                        <span class="text-cyan-400 group-hover:translate-x-1 transition font-bold">Démarrer <i class="fa-solid fa-chevron-right ml-1"></i></span>
+                    </div>
+                </div>
+
+                <!-- Mission 2 Card -->
+                <div onclick="launchMission(2)" class="cyber-glass p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 transition cursor-pointer group relative overflow-hidden flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-950 border border-indigo-500/30 text-indigo-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <span id="m2-badge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">En attente</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">Module 2</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-300 transition">ID vs Authentification</h3>
+                        <p class="text-slate-400 text-xs mt-1">Comprends la différence entre dire qui tu es et prouver que c'est bien toi !</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400">
+                        <span><i class="fa-solid fa-coins text-amber-400 mr-1"></i> +100 XP</span>
+                        <span class="text-indigo-400 group-hover:translate-x-1 transition font-bold">Démarrer <i class="fa-solid fa-chevron-right ml-1"></i></span>
+                    </div>
+                </div>
+
+                <!-- Mission 3 Card -->
+                <div onclick="launchMission(3)" class="cyber-glass p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 transition cursor-pointer group relative overflow-hidden flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-950 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <span id="m3-badge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">En attente</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Module 3</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-emerald-300 transition">Password Lab & RTX 5090</h3>
+                        <p class="text-slate-400 text-xs mt-1">Teste la résistance des mots de passe face au simulateur de supercalculateur de piratage !</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400">
+                        <span><i class="fa-solid fa-coins text-amber-400 mr-1"></i> +150 XP</span>
+                        <span class="text-emerald-400 group-hover:translate-x-1 transition font-bold">Démarrer <i class="fa-solid fa-chevron-right ml-1"></i></span>
+                    </div>
+                </div>
+
+                <!-- Mission 4 Card -->
+                <div onclick="launchMission(4)" class="cyber-glass p-6 rounded-2xl border border-slate-800 hover:border-cyan-500/50 transition cursor-pointer group relative overflow-hidden flex flex-col justify-between space-y-4">
+                    <div class="flex items-start justify-between">
+                        <div class="w-12 h-12 rounded-xl bg-rose-950 border border-rose-500/30 text-rose-400 flex items-center justify-center text-xl group-hover:scale-110 transition">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <span id="m4-badge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">En attente</span>
+                    </div>
+                    <div>
+                        <span class="text-xs font-bold text-rose-400 uppercase tracking-widest">Module 4</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-rose-300 transition">Urgence & Cyber-Réflexes</h3>
+                        <p class="text-slate-400 text-xs mt-1">Gère les cas d'usurpation d'identité, de cyberviolence et découvre le réflexe 3018.</p>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400">
+                        <span><i class="fa-solid fa-coins text-amber-400 mr-1"></i> +150 XP</span>
+                        <span class="text-rose-400 group-hover:translate-x-1 transition font-bold">Démarrer <i class="fa-solid fa-chevron-right ml-1"></i></span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Final Boss / Exam Banner -->
+            <div id="final-exam-card" class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-600/20 via-purple-600/20 to-cyan-600/20 border border-amber-500/30 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center text-2xl shrink-0">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Évaluation Finale & Diplôme d'Agent</h3>
+                        <p class="text-slate-300 text-xs">Prouve tes connaissances pour décrocher le Brevet de CyberAgent et imprimer ton certificat.</p>
+                    </div>
+                </div>
+                <button onclick="launchExam()" id="btn-start-exam" class="w-full md:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm transition shadow-lg shadow-amber-500/20 whitespace-nowrap">
+                    PASSER L'EXAMEN
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN: MISSION 1 - TRI DES DONNEES -->
+        <section id="screen-m1" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <span class="text-xs font-mono font-bold text-cyan-400 uppercase">Module 1 • Données & Traces</span>
+                    <h2 class="text-2xl font-black text-white">Le Tri du Détective Web</h2>
+                </div>
+                <button onclick="showScreen('screen-dashboard')" class="text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-lg bg-slate-800">
+                    <i class="fa-solid fa-xmark mr-1"></i> Quitter
+                </button>
+            </div>
+
+            <div class="bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-sm text-slate-300">
+                <p><i class="fa-solid fa-circle-info text-cyan-400 mr-2"></i><strong>Consigne :</strong> Répartis correctement chaque élément ci-dessous dans la bonne catégorie. Clique sur la donnée puis sur le panier correspondant !</p>
+            </div>
+
+            <!-- Sorting Playground -->
+            <div id="m1-game-area" class="space-y-6">
+                <!-- Current item card to sort -->
+                <div class="flex justify-center">
+                    <div id="m1-item-card" class="cyber-glass p-6 rounded-2xl border-2 border-cyan-400 text-center max-w-md w-full shadow-2xl transition-all duration-300 transform">
+                        <div id="m1-item-icon" class="text-4xl text-cyan-400 mb-2"><i class="fa-solid fa-fingerprint"></i></div>
+                        <h3 id="m1-item-title" class="text-xl font-bold text-white">Prénom & Nom</h3>
+                        <p id="m1-item-desc" class="text-xs text-slate-400 mt-1">Inscrit sur ta carte de bus ou tes cahiers.</p>
+                    </div>
+                </div>
+
+                <!-- Target Baskets -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="m1SortChoice('personnelle')" class="p-5 rounded-2xl bg-slate-900 border-2 border-slate-800 hover:border-cyan-400 text-left transition group hover:bg-slate-800/80 space-y-2">
+                        <div class="flex items-center space-x-3 text-cyan-400">
+                            <i class="fa-solid fa-id-card text-2xl"></i>
+                            <span class="font-bold text-base text-white">Donnée Personnelle</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Information directe qui permet de t'identifier personnellement (nom, photo, adresse...).</p>
+                    </button>
+
+                    <button onclick="m1SortChoice('trace')" class="p-5 rounded-2xl bg-slate-900 border-2 border-slate-800 hover:border-indigo-400 text-left transition group hover:bg-slate-800/80 space-y-2">
+                        <div class="flex items-center space-x-3 text-indigo-400">
+                            <i class="fa-solid fa-shoe-prints text-2xl"></i>
+                            <span class="font-bold text-base text-white">Trace Numérique</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Information laissée automatiquement lors de ton utilisation des services (cookies, géo, historique...).</p>
+                    </button>
+                </div>
+
+                <!-- Progress indicators -->
+                <div class="flex justify-between items-center text-xs text-slate-400 font-mono">
+                    <span id="m1-counter">Élément 1 / 6</span>
+                    <span id="m1-feedback" class="font-bold"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: MISSION 2 - IDENTIFICATION VS AUTHENTIFICATION -->
+        <section id="screen-m2" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <span class="text-xs font-mono font-bold text-indigo-400 uppercase">Module 2 • Accès & Connexion</span>
+                    <h2 class="text-2xl font-black text-white">S'identifier vs S'authentifier</h2>
+                </div>
+                <button onclick="showScreen('screen-dashboard')" class="text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-lg bg-slate-800">
+                    <i class="fa-solid fa-xmark mr-1"></i> Quitter
+                </button>
+            </div>
+
+            <!-- Metaphor Box -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-indigo-950/40 border border-indigo-500/30 p-4 rounded-xl space-y-2">
+                    <h3 class="font-bold text-indigo-300 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-user-tag"></i> 1. S'IDENTIFIER
+                    </h3>
+                    <p class="text-xs text-slate-300">C'est **dire qui on est**. Comme donner son prénom ou son pseudo. C'est public ou visible.</p>
+                    <p class="text-xs text-indigo-400 font-mono">Exemples : Nom d'utilisateur, Identifiant ENT, Pseudo.</p>
+                </div>
+                <div class="bg-purple-950/40 border border-purple-500/30 p-4 rounded-xl space-y-2">
+                    <h3 class="font-bold text-purple-300 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-key"></i> 2. S'AUTHENTIFIER
+                    </h3>
+                    <p class="text-xs text-slate-300">C'est **prouver que c'est bien toi**. C'est le secret ou le code personnel de sécurité.</p>
+                    <p class="text-xs text-purple-400 font-mono">Exemples : Mot de passe secret, Code SMS reçu, Empreinte.</p>
+                </div>
+            </div>
+
+            <!-- Interactive Terminal Scenario -->
+            <div class="cyber-glass p-6 rounded-2xl border border-slate-800 space-y-5">
+                <div id="m2-scenario-header" class="flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800 pb-3">
+                    <span>Terminal d'Accès ENT Collège</span>
+                    <span id="m2-step-indicator" class="text-indigo-400">Situation 1 sur 4</span>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 id="m2-question-title" class="text-lg font-bold text-white">Situation</h3>
+                    <p id="m2-question-desc" class="text-sm text-slate-300 leading-relaxed"></p>
+                </div>
+
+                <div id="m2-choices-container" class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                    <!-- Dynamic Buttons -->
+                </div>
+
+                <div id="m2-explanation" class="hidden p-4 rounded-xl bg-slate-900 border text-xs leading-relaxed"></div>
+            </div>
+        </section>
+
+        <!-- SCREEN: MISSION 3 - PASSWORD LAB & RTX 5090 -->
+        <section id="screen-m3" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <span class="text-xs font-mono font-bold text-emerald-400 uppercase">Module 3 • Mots de Passe & Bruteforce</span>
+                    <h2 class="text-2xl font-black text-white">Laboratoire de Mot de Passe & RTX 5090</h2>
+                </div>
+                <button onclick="showScreen('screen-dashboard')" class="text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-lg bg-slate-800">
+                    <i class="fa-solid fa-xmark mr-1"></i> Quitter
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Interactive Simulator Left Side -->
+                <div class="lg:col-span-7 space-y-5">
+                    <div class="cyber-glass p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calculator text-emerald-400"></i>
+                            Simulateur de Mot de Passe
+                        </h3>
+                        <p class="text-xs text-slate-400">Entre un mot de passe ou teste un exemple pour estimer le temps nécessaire à un pirate équipé d'un supercalculateur (12 x RTX 5090) pour le craquer !</p>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1">Mot de Passe à tester :</label>
+                            <div class="relative">
+                                <input type="text" id="m3-password-input" oninput="evaluatePassword()" placeholder="Entre ton mot de passe..." 
+                                       class="w-full pl-4 pr-10 py-3 bg-slate-950 border border-slate-700 rounded-xl text-emerald-300 font-mono text-base focus:border-emerald-400 outline-none">
+                                <button onclick="generateStrongPassword()" class="absolute right-2 top-2 px-3 py-1.5 bg-emerald-950 text-emerald-400 border border-emerald-800 hover:bg-emerald-900 rounded-lg text-xs font-bold font-mono">
+                                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> Générer
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Cracking Meter -->
+                        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-400">Temps de craquage estimé (2025) :</span>
+                                <span id="m3-crack-time" class="font-mono font-bold text-sm text-rose-400">Instantané</span>
+                            </div>
+                            <div class="w-full bg-slate-900 h-3 rounded-full overflow-hidden border border-slate-800">
+                                <div id="m3-strength-bar" class="h-full bg-rose-500 w-5 transition-all duration-300"></div>
+                            </div>
+                            <!-- Rules Checklist -->
+                            <div class="grid grid-cols-2 gap-2 text-xs font-mono pt-2">
+                                <div id="m3-rule-length" class="text-slate-500"><i class="fa-solid fa-circle-xmark mr-1"></i> 10 à 12 car. min</div>
+                                <div id="m3-rule-upper" class="text-slate-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Majuscule (A-Z)</div>
+                                <div id="m3-rule-lower" class="text-slate-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Minuscule (a-z)</div>
+                                <div id="m3-rule-number" class="text-slate-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Chiffre (0-9)</div>
+                                <div id="m3-rule-symbol" class="text-slate-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Symbole (@,#,!)</div>
+                                <div id="m3-rule-nopersonal" class="text-slate-500"><i class="fa-solid fa-circle-xmark mr-1"></i> Ni prénom/azerty</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Challenge Task -->
+                    <div id="m3-challenge-box" class="cyber-glass p-5 rounded-2xl border border-emerald-500/30 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest"><i class="fa-solid fa-bullseye mr-1"></i> Défi de la Mission</span>
+                            <span id="m3-challenge-status" class="text-xs text-amber-400 font-bold">En cours</span>
+                        </div>
+                        <p class="text-sm text-slate-200">Crée un mot de passe qui demande **au moins 100 Ans ou plus** pour être piraté !</p>
+                        <button id="m3-validate-btn" onclick="validateM3Challenge()" class="w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs uppercase hover:bg-emerald-400 transition">
+                            Valider le Mot de Passe Inviolable
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reference Table Right Side (Based on PDF) -->
+                <div class="lg:col-span-5 cyber-glass p-5 rounded-2xl border border-slate-800 space-y-4">
+                    <h3 class="text-sm font-bold text-slate-200 flex items-center justify-between">
+                        <span><i class="fa-solid fa-table-list text-cyan-400 mr-1.5"></i> Grille de Résistance (PDF)</span>
+                        <span class="text-xs text-slate-500 font-mono">12x RTX 5090</span>
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-800 text-slate-400">
+                                    <th class="py-2 px-1">Long.</th>
+                                    <th class="py-2 px-1">Chiffres</th>
+                                    <th class="py-2 px-1">Min/Maj</th>
+                                    <th class="py-2 px-1">Min/Maj/Ch/Symb</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/50 text-slate-300">
+                                <tr>
+                                    <td class="py-2 px-1 font-bold text-cyan-400">6 car.</td>
+                                    <td class="py-2 px-1 text-rose-400">Instantané</td>
+                                    <td class="py-2 px-1 text-rose-400">46 min</td>
+                                    <td class="py-2 px-1 text-amber-400">8 jours</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-1 font-bold text-cyan-400">8 car.</td>
+                                    <td class="py-2 px-1 text-rose-400">Instantané</td>
+                                    <td class="py-2 px-1 text-amber-400">3 semaines</td>
+                                    <td class="py-2 px-1 text-emerald-400">19 ans</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-1 font-bold text-cyan-400">10 car.</td>
+                                    <td class="py-2 px-1 text-rose-400">1 jour</td>
+                                    <td class="py-2 px-1 text-emerald-400">90 ans</td>
+                                    <td class="py-2 px-1 text-emerald-400 font-bold">2 Mds ans</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 px-1 font-bold text-cyan-400">12 car.</td>
+                                    <td class="py-2 px-1 text-amber-400">3 mois</td>
+                                    <td class="py-2 px-1 text-emerald-400">27K ans</td>
+                                    <td class="py-2 px-1 text-emerald-400 font-bold">230 Bn ans</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 bg-slate-900 rounded-xl text-xs text-slate-400 space-y-1">
+                        <p class="text-amber-400 font-bold"><i class="fa-solid fa-triangle-exclamation mr-1"></i> RÈGLES D'OR :</p>
+                        <p>• Ne réutilise JAMAIS le même mot de passe pour deux comptes importants.</p>
+                        <p>• Ne le partage JAMAIS, même avec ton/ta meilleur(e) ami(e) !</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN: MISSION 4 - ATTENTION AUX DERIVES & 3018 -->
+        <section id="screen-m4" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <span class="text-xs font-mono font-bold text-rose-400 uppercase">Module 4 • Prévention & Réflexes</span>
+                    <h2 class="text-2xl font-black text-white">Cas Pratiques & Numéro 3018</h2>
+                </div>
+                <button onclick="showScreen('screen-dashboard')" class="text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-lg bg-slate-800">
+                    <i class="fa-solid fa-xmark mr-1"></i> Quitter
+                </button>
+            </div>
+
+            <!-- Emergency Banner 3018 -->
+            <div class="bg-gradient-to-r from-rose-950 via-slate-900 to-indigo-950 p-5 rounded-2xl border border-rose-500/40 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 rounded-2xl bg-rose-600 text-white flex items-center justify-center font-black text-2xl shadow-lg shadow-rose-600/30 shrink-0">
+                        3018
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white">Le 3018 : Numéro Gratuit, Anonyme & Confidentiel</h3>
+                        <p class="text-xs text-slate-300">L'application et le numéro unique pour signaler toute situation de cyberharcèlement, usurpation d'identité ou violence en ligne.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Cases Simulator -->
+            <div class="cyber-glass p-6 rounded-2xl border border-slate-800 space-y-5">
+                <div class="flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800 pb-3">
+                    <span id="m4-case-category" class="text-rose-400 uppercase font-bold">Cas #1</span>
+                    <span id="m4-case-progress">Cas 1 sur 3</span>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 id="m4-case-title" class="text-xl font-bold text-white">Titre du Cas</h3>
+                    <div id="m4-case-bubble" class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-sm text-slate-200 leading-relaxed italic">
+                        "Un inconnu utilise ta photo et ton nom sur TikTok pour insulter des camarades..."
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Quelle est la meilleure réaction à adopter ?</label>
+                    <div id="m4-choices-grid" class="grid grid-cols-1 gap-3">
+                        <!-- Dynamic Options -->
+                    </div>
+                </div>
+
+                <div id="m4-feedback-box" class="hidden p-4 rounded-xl text-xs leading-relaxed"></div>
+            </div>
+        </section>
+
+        <!-- SCREEN: FINAL EXAM & DIPLOMA -->
+        <section id="screen-exam" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <span class="text-xs font-mono font-bold text-amber-400 uppercase">Évaluation Nationale Collège</span>
+                    <h2 class="text-2xl font-black text-white">Brevet de CyberAgent</h2>
+                </div>
+                <button onclick="showScreen('screen-dashboard')" class="text-slate-400 hover:text-white text-xs px-3 py-1.5 rounded-lg bg-slate-800">
+                    <i class="fa-solid fa-xmark mr-1"></i> Quitter
+                </button>
+            </div>
+
+            <div id="exam-quiz-container" class="cyber-glass p-6 rounded-2xl border border-slate-800 space-y-6">
+                <div class="flex justify-between items-center text-xs font-mono text-slate-400 border-b border-slate-800 pb-3">
+                    <span>Questionnaire de Validation</span>
+                    <span id="exam-question-number" class="text-amber-400 font-bold">Question 1 / 5</span>
+                </div>
+
+                <div class="space-y-3">
+                    <h3 id="exam-question-text" class="text-lg font-bold text-white">Intitulé de la question</h3>
+                </div>
+
+                <div id="exam-answers-grid" class="grid grid-cols-1 gap-3">
+                    <!-- Exam Choices -->
+                </div>
+            </div>
+
+            <!-- CERTIFICATE DISPLAY (Shown when exam completed) -->
+            <div id="certificate-container" class="hidden cyber-glass p-8 rounded-3xl border-2 border-amber-400/60 text-center space-y-6 relative overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black shadow-2xl">
+                
+                <!-- Zone de contenu diplôme -->
+                <div id="certificate-printable-card" class="space-y-6">
+                    <!-- Certificate Watermark -->
+                    <div class="absolute -right-10 -bottom-10 opacity-5 text-amber-400 text-9xl pointer-events-none">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="inline-block p-3 rounded-2xl bg-amber-500/10 border border-amber-400/40 text-amber-400 text-3xl mb-2">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                        <span class="block text-xs font-mono uppercase tracking-widest text-amber-400 font-bold">ACADÉMIE NUMÉRIQUE DE TECHNOLOGIE</span>
+                        <h2 class="text-3xl font-black text-white tracking-wide">DIPLÔME DE CYBER-AGENT</h2>
+                        <p class="text-slate-400 text-xs">Attestation de sensibilisation à la sécurité informatique au Collège</p>
+                    </div>
+
+                    <div class="py-4 border-y border-slate-800 max-w-md mx-auto space-y-1">
+                        <p class="text-xs text-slate-400">Décerné officiellement à :</p>
+                        <p id="cert-agent-name" class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-amber-300 to-indigo-400">Agent Inconnu</p>
+                        <p class="text-xs text-emerald-400 font-mono pt-2"><i class="fa-solid fa-circle-check mr-1"></i> Score Final : <span id="cert-score">0 XP</span></p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-2 max-w-md mx-auto text-xs text-slate-300 font-mono pt-2">
+                        <div class="cert-badge-box p-2 rounded-lg bg-slate-900 border border-slate-800">
+                            <i class="fa-solid fa-lock text-cyan-400 block text-base mb-1"></i>
+                            <span>Mots de passe</span>
+                        </div>
+                        <div class="cert-badge-box p-2 rounded-lg bg-slate-900 border border-slate-800">
+                            <i class="fa-solid fa-fingerprint text-indigo-400 block text-base mb-1"></i>
+                            <span>Traces Web</span>
+                        </div>
+                        <div class="cert-badge-box p-2 rounded-lg bg-slate-900 border border-slate-800">
+                            <i class="fa-solid fa-phone text-rose-400 block text-base mb-1"></i>
+                            <span>Réflexe 3018</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="flex flex-col sm:flex-row justify-center gap-3 pt-4 no-print">
+                    <button onclick="downloadPDF()" class="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:opacity-95 text-slate-950 font-extrabold text-xs uppercase transition shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-pdf text-base"></i> Télécharger le PDF
+                    </button>
+                    <button onclick="printCertificate()" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-extrabold text-xs uppercase transition shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-print text-base"></i> Imprimer
+                    </button>
+                    <button onclick="showScreen('screen-dashboard')" class="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase transition">
+                        Retour aux Missions
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- GLOSSARY / MEMO MODAL (PDF RECAP) -->
+    <div id="modal-glossary" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="cyber-glass max-w-2xl w-full max-h-[85vh] rounded-3xl border border-slate-700 flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+                <h3 class="font-bold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-book-bookmark text-cyan-400"></i> Fiche Mémo du Cours de Cybersécurité
+                </h3>
+                <button onclick="toggleGlossaryModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-5 text-xs text-slate-300 leading-relaxed">
+                <section class="space-y-1">
+                    <h4 class="font-bold text-cyan-400 text-sm">1. La Cybersécurité</h4>
+                    <p>Ensemble des règles et pratiques pour protéger ordinateurs, réseaux et données contre le vol ou les attaques. Metaphore : comme une serrure et une alarme protègent une maison.</p>
+                </section>
+                <section class="space-y-1">
+                    <h4 class="font-bold text-indigo-400 text-sm">2. Données vs Traces Numériques</h4>
+                    <p>• <strong>Données personnelles :</strong> Nom, prénom, âge, adresse, photo, collège...</p>
+                    <p>• <strong>Traces numériques :</strong> Historique de navigation, cookies (témoins de connexion), géolocalisation.</p>
+                </section>
+                <section class="space-y-1">
+                    <h4 class="font-bold text-purple-400 text-sm">3. Identification vs Authentification</h4>
+                    <p>• <strong>S'identifier :</strong> Dire qui on est (ex : ton identifiant ENT, pseudo).</p>
+                    <p>• <strong>S'authentifier :</strong> Prouver que c’est bien toi (ex : mot de passe secret, SMS).</p>
+                </section>
+                <section class="space-y-1">
+                    <h4 class="font-bold text-emerald-400 text-sm">4. Un Mot de Passe Solide</h4>
+                    <p>• 10 à 12 caractères minimum.</p>
+                    <p>• Mélange de majuscules, minuscules, chiffres et symboles.</p>
+                    <p>• Jamais ton prénom, date de naissance, "123456" ou "azerty".</p>
+                    <p>• Un mot de passe différent par compte et ne jamais le partager avec un ami !</p>
+                </section>
+                <section class="space-y-1">
+                    <h4 class="font-bold text-rose-400 text-sm">5. Dérives & Réflexes (3018)</h4>
+                    <p>• <strong>Usurpation d'identité :</strong> Quelqu'un utilise ton nom/photo sans ton accord.</p>
+                    <p>• <strong>Cyberviolence :</strong> Insultes, moqueries ou harcèlement en ligne.</p>
+                    <p>• <strong>Réflexes :</strong> Ne réponds pas, fais des captures d'écran (preuves), préviens un adulte (parents, prof, CPE) et appelle le <strong>3018</strong>.</p>
+                </section>
+            </div>
+            <div class="p-4 border-t border-slate-800 bg-slate-900/80 text-right">
+                <button onclick="toggleGlossaryModal()" class="px-5 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs hover:bg-cyan-400">
+                    J'ai compris !
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 py-4 text-center text-xs text-slate-500">
+        <p>CyberAgent Collège • Application Pédagogique de Technologie 5ème/4ème • Conforme au programme scolaire</p>
+    </footer>
+
+    <script>
+        // Global Game State
+        const state = {
+            playerName: "Agent_5B",
+            avatar: "astronaut",
+            score: 0,
+            completedMissions: {
+                m1: false,
+                m2: false,
+                m3: false,
+                m4: false
+            },
+            examPassed: false
+        };
+
+        // Mission 1 Data
+        const m1Items = [
+            { id: 1, title: "Prénom et Nom de famille", desc: "Écrit sur ton bulletin scolaire.", category: "personnelle", icon: "fa-solid fa-address-card" },
+            { id: 2, title: "Historique de recherche Google", desc: "La liste de tous les sites que tu as visités hier.", category: "trace", icon: "fa-solid fa-clock-rotate-left" },
+            { id: 3, title: "Adresse de ton domicile", desc: "L'endroit où tu habites.", category: "personnelle", icon: "fa-solid fa-house-user" },
+            { id: 4, title: "Cookies de connexion", desc: "Fichiers témoins enregistrés par les sites web.", category: "trace", icon: "fa-solid fa-cookie-bite" },
+            { id: 5, title: "Photo de ton visage", desc: "Ta photo de profil sur ton compte.", category: "personnelle", icon: "fa-solid fa-camera" },
+            { id: 6, title: "Géolocalisation GPS", desc: "La position exacte de ton smartphone en temps réel.", category: "trace", icon: "fa-solid fa-location-dot" }
+        ];
+        let m1Index = 0;
+
+        // Mission 2 Data
+        const m2Questions = [
+            {
+                title: "Connexion à l'ENT du Collège",
+                desc: "Tu tapes ton identifiant d'élève (ex: p.durand) sur la page d'accueil de l'ENT.",
+                type: "id",
+                options: [
+                    { text: "C'est de l'Identification (dire qui on est)", correct: true },
+                    { text: "C'est de l'Authentification (prouver qui on est)", correct: false }
+                ],
+                explanation: "S'identifier consiste à donner son nom d'utilisateur ou pseudo pour indiquer au système quel compte on veut utiliser."
+            },
+            {
+                title: "Saisie du Code Secret",
+                desc: "Tu saisis ton mot de passe confidentiel constitué de lettres, chiffres et symboles.",
+                type: "auth",
+                options: [
+                    { text: "C'est de l'Identification", correct: false },
+                    { text: "C'est de l'Authentification (prouver qui on est)", correct: true }
+                ],
+                explanation: "S'authentifier consiste à apporter la preuve (le mot de passe) que tu es bien le propriétaire légitime du compte."
+            },
+            {
+                title: "Double Sécurité par SMS",
+                desc: "Tu reçois un code à 6 chiffres par SMS sur ton téléphone pour valider ta connexion.",
+                type: "auth",
+                options: [
+                    { text: "C'est de l'Identification", correct: false },
+                    { text: "C'est de l'Authentification renforcée", correct: true }
+                ],
+                explanation: "Un code reçu sur ton téléphone est une preuve supplémentaire d'authentification (Authentification à double facteur)."
+            },
+            {
+                title: "Adresse Email d'inscription",
+                desc: "Tu donnes ton adresse mail 'alex.collège@email.fr' lors de la création d'un compte.",
+                type: "id",
+                options: [
+                    { text: "C'est de l'Identification", correct: true },
+                    { text: "C'est de l'Authentification", correct: false }
+                ],
+                explanation: "L'adresse email sert d'identifiant public pour te désigner sur le service."
+            }
+        ];
+        let m2Index = 0;
+
+        // Mission 4 Cases Data
+        const m4Cases = [
+            {
+                title: "Usurpation d'Identité",
+                desc: "Un camarade a créé un compte Instagram avec ta photo et ton prénom, et poste de faux messages gênants en se faisant passer pour toi.",
+                choices: [
+                    { text: "Je l'insulte en retour dans les commentaires.", correct: false },
+                    { text: "Je garde une preuve (capture d'écran), ne réponds pas, et préviens un adulte (CPE/parents/3018).", correct: true },
+                    { text: "Je donne mon mot de passe pour prouver que c'est moi le vrai.", correct: false }
+                ],
+                explanation: "En cas d'usurpation d'identité : la capture d'écran sert de preuve légale. Préviens un adulte et signale le compte immédiatement."
+            },
+            {
+                title: "Cyberviolence sur un Groupe de Classe",
+                desc: "Dans le groupe WhatsApp de la classe, plusieurs élèves se moquent méchamment d'un élève discret et lui envoient des insultes répétées.",
+                choices: [
+                    { text: "Je rigole avec les autres pour ne pas être exclu du groupe.", correct: false },
+                    { text: "Je fais une capture d'écran des insultes, je soutiens l'élève et j'en parle à un adulte ou au 3018.", correct: true },
+                    { text: "Je quitte le groupe sans rien dire à personne.", correct: false }
+                ],
+                explanation: "Le cyberharcèlement est puni par la loi. Garder des preuves et en parler au 3018 ou au collège permet de protéger la victime."
+            },
+            {
+                title: "Un 'ami' te demande ton mot de passe Fortnite / Roblox",
+                desc: "Ton meilleur ami du collège te demande ton mot de passe pour te faire 'monter de niveau' pendant le week-end.",
+                choices: [
+                    { text: "Je lui donne, c'est mon ami, je peux lui faire confiance.", correct: false },
+                    { text: "Je refuse gentiment : un mot de passe est strictement personnel et ne se partage jamais.", correct: true },
+                    { text: "Je lui donne mais je lui demande le sien en échange.", correct: false }
+                ],
+                explanation: "Un mot de passe ne se partage JAMAIS, même avec un ami proche ! Une dispute peut arriver et ton compte pourrait être piraté ou volé."
+            }
+        ];
+        let m4Index = 0;
+
+        // Exam Questions
+        const examQuestions = [
+            {
+                q: "Quelle est la définition de la cybersécurité ?",
+                options: [
+                    "Un jeu vidéo où on combat des robots sur Internet.",
+                    "L'ensemble des règles et pratiques pour protéger un ordinateur, réseau ou données.",
+                    "L'obligation de changer d'ordinateur tous les ans."
+                ],
+                answer: 1
+            },
+            {
+                q: "Lequel de ces éléments est une TRACE NUMÉRIQUE ?",
+                options: [
+                    "Ton nom de famille.",
+                    "Tes témoins de connexion (cookies) et ton historique de navigation.",
+                    "La photo de ta carte d'identité."
+                ],
+                answer: 1
+            },
+            {
+                q: "Un mot de passe est considéré comme solide s'il contient :",
+                options: [
+                    "Ton prénom suivi de ta date de naissance (ex: Thomas2012).",
+                    "Au moins 10-12 caractères mélangés (Majuscules, minuscules, chiffres, symboles).",
+                    "La suite logique 'azerty12345'."
+                ],
+                answer: 1
+            },
+            {
+                q: "Quelle est la différence entre S'IDENTIFIER et S'AUTHENTIFIER ?",
+                options: [
+                    "C'est exactement la même chose.",
+                    "S'identifier c'est dire qui on est, s'authentifier c'est prouver que c'est bien nous avec un secret.",
+                    "S'authentifier c'est donner son prénom, s'identifier c'est donner son âge."
+                ],
+                answer: 1
+            },
+            {
+                q: "Quel numéro gratuit et confidential peux-tu appeler en cas de harcèlement en ligne ?",
+                options: [
+                    "Le 15",
+                    "Le 3018",
+                    "Le 118 218"
+                ],
+                answer: 1
+            }
+        ];
+        let examIndex = 0;
+        let examScore = 0;
+
+        // Navigation Functions
+        function showScreen(screenId) {
+            sfx.click();
+            document.querySelectorAll('.screen-view').forEach(s => s.classList.add('hidden'));
+            const target = document.getElementById(screenId);
+            if(target) target.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function selectAvatar(type, btnEl) {
+            sfx.click();
+            state.avatar = type;
+            document.querySelectorAll('.avatar-btn').forEach(b => {
+                b.classList.remove('border-cyan-400', 'bg-cyan-950/40', 'text-cyan-400');
+                b.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
+            });
+            btnEl.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+            btnEl.classList.add('border-cyan-400', 'bg-cyan-950/40', 'text-cyan-400');
+        }
+
+        function startGame() {
+            sfx.init();
+            sfx.success();
+            const nameInput = document.getElementById('input-agent-name').value.trim();
+            if (nameInput) {
+                state.playerName = nameInput;
+            }
+            
+            // Update UI elements with player profile
+            document.getElementById('player-name-display').innerText = state.playerName;
+            document.getElementById('player-profile-badge').classList.remove('hidden');
+            
+            const avatarIcons = {
+                astronaut: '<i class="fa-solid fa-user-astronaut"></i>',
+                ninja: '<i class="fa-solid fa-user-ninja"></i>',
+                robot: '<i class="fa-solid fa-robot"></i>',
+                secret: '<i class="fa-solid fa-user-secret"></i>'
+            };
+            document.getElementById('player-avatar-icon').innerHTML = avatarIcons[state.avatar] || avatarIcons.astronaut;
+
+            showScreen('screen-dashboard');
+        }
+
+        function updateScore(points) {
+            state.score += points;
+            document.getElementById('global-score').innerText = `${state.score} XP`;
+        }
+
+        function checkOverallProgress() {
+            const completedCount = Object.values(state.completedMissions).filter(Boolean).length;
+            const percent = (completedCount / 4) * 100;
+            document.getElementById('overall-progress-bar').style.width = `${percent}%`;
+            document.getElementById('overall-progress-text').innerText = `${completedCount}/4 Complété(s)`;
+        }
+
+        function toggleGlossaryModal() {
+            sfx.click();
+            const modal = document.getElementById('modal-glossary');
+            modal.classList.toggle('hidden');
+        }
+
+        // Mission Launchers
+        function launchMission(id) {
+            sfx.click();
+            if (id === 1) {
+                m1Index = 0;
+                renderM1Card();
+                showScreen('screen-m1');
+            } else if (id === 2) {
+                m2Index = 0;
+                renderM2Question();
+                showScreen('screen-m2');
+            } else if (id === 3) {
+                document.getElementById('m3-password-input').value = "";
+                evaluatePassword();
+                showScreen('screen-m3');
+            } else if (id === 4) {
+                m4Index = 0;
+                renderM4Case();
+                showScreen('screen-m4');
+            }
+        }
+
+        // MISSION 1 LOGIC
+        function renderM1Card() {
+            if (m1Index >= m1Items.length) {
+                // Completed M1
+                sfx.fanfare();
+                state.completedMissions.m1 = true;
+                updateScore(100);
+                document.getElementById('m1-badge').innerText = "✓ Validé";
+                document.getElementById('m1-badge').className = "text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800";
+                checkOverallProgress();
+                showScreen('screen-dashboard');
+                return;
+            }
+
+            const current = m1Items[m1Index];
+            document.getElementById('m1-item-title').innerText = current.title;
+            document.getElementById('m1-item-desc').innerText = current.desc;
+            document.getElementById('m1-item-icon').innerHTML = `<i class="${current.icon}"></i>`;
+            document.getElementById('m1-counter').innerText = `Élément ${m1Index + 1} / ${m1Items.length}`;
+            document.getElementById('m1-feedback').innerText = "";
+        }
+
+        function m1SortChoice(choice) {
+            const current = m1Items[m1Index];
+            const feedback = document.getElementById('m1-feedback');
+
+            if (choice === current.category) {
+                sfx.success();
+                feedback.className = "font-bold text-emerald-400";
+                feedback.innerText = "Correct ! +15 XP";
+                updateScore(15);
+                m1Index++;
+                setTimeout(renderM1Card, 800);
+            } else {
+                sfx.error();
+                feedback.className = "font-bold text-rose-400";
+                feedback.innerText = "Erreur ! Analyse bien l'élément.";
+            }
+        }
+
+        // MISSION 2 LOGIC
+        function renderM2Question() {
+            if (m2Index >= m2Questions.length) {
+                sfx.fanfare();
+                state.completedMissions.m2 = true;
+                updateScore(100);
+                document.getElementById('m2-badge').innerText = "✓ Validé";
+                document.getElementById('m2-badge').className = "text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800";
+                checkOverallProgress();
+                showScreen('screen-dashboard');
+                return;
+            }
+
+            const q = m2Questions[m2Index];
+            document.getElementById('m2-step-indicator').innerText = `Situation ${m2Index + 1} sur ${m2Questions.length}`;
+            document.getElementById('m2-question-title').innerText = q.title;
+            document.getElementById('m2-question-desc').innerText = q.desc;
+            
+            const choicesContainer = document.getElementById('m2-choices-container');
+            choicesContainer.innerHTML = "";
+            document.getElementById('m2-explanation').classList.add('hidden');
+
+            q.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-indigo-400 text-left font-semibold text-xs text-white transition";
+                btn.innerText = opt.text;
+                btn.onclick = () => answerM2(opt.correct, q.explanation);
+                choicesContainer.appendChild(btn);
+            });
+        }
+
+        function answerM2(isCorrect, exp) {
+            const expBox = document.getElementById('m2-explanation');
+            expBox.classList.remove('hidden');
+            if (isCorrect) {
+                sfx.success();
+                expBox.className = "p-4 rounded-xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs leading-relaxed";
+                expBox.innerHTML = `<strong><i class="fa-solid fa-circle-check mr-1"></i> Bravo !</strong> ${exp}`;
+                updateScore(25);
+                setTimeout(() => {
+                    m2Index++;
+                    renderM2Question();
+                }, 1800);
+            } else {
+                sfx.error();
+                expBox.className = "p-4 rounded-xl bg-rose-950/60 border border-rose-500/30 text-rose-300 text-xs leading-relaxed";
+                expBox.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation mr-1"></i> Oups !</strong> ${exp}`;
+            }
+        }
+
+        // MISSION 3 LOGIC (Password evaluator)
+        function evaluatePassword() {
+            const pwd = document.getElementById('m3-password-input').value;
+            
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasLower = /[a-z]/.test(pwd);
+            const hasNumber = /[0-9]/.test(pwd);
+            const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
+            const hasLen = pwd.length >= 10;
+            const isPersonal = /1234|azerty|0000|admin|password|thomas|lucas|chloe|emma/i.test(pwd);
+
+            // Update Checklist UI
+            updateCheckItem('m3-rule-length', hasLen);
+            updateCheckItem('m3-rule-upper', hasUpper);
+            updateCheckItem('m3-rule-lower', hasLower);
+            updateCheckItem('m3-rule-number', hasNumber);
+            updateCheckItem('m3-rule-symbol', hasSymbol);
+            updateCheckItem('m3-rule-nopersonal', !isPersonal && pwd.length > 0);
+
+            // Calculate score and crack time
+            let strength = 0;
+            if (pwd.length > 0) strength += Math.min(pwd.length * 5, 40);
+            if (hasUpper) strength += 15;
+            if (hasLower) strength += 10;
+            if (hasNumber) strength += 15;
+            if (hasSymbol) strength += 20;
+            if (isPersonal) strength = Math.max(0, strength - 50);
+
+            const bar = document.getElementById('m3-strength-bar');
+            const timeLabel = document.getElementById('m3-crack-time');
+
+            bar.style.width = `${Math.min(strength, 100)}%`;
+
+            if (strength < 30 || isPersonal) {
+                bar.className = "h-full bg-rose-500 transition-all duration-300";
+                timeLabel.className = "font-mono font-bold text-sm text-rose-400";
+                timeLabel.innerText = "Instantané / Quelques minutes";
+            } else if (strength < 60) {
+                bar.className = "h-full bg-amber-500 transition-all duration-300";
+                timeLabel.className = "font-mono font-bold text-sm text-amber-400";
+                timeLabel.innerText = "Quelques jours à 2 semaines";
+            } else if (strength < 85) {
+                bar.className = "h-full bg-cyan-400 transition-all duration-300";
+                timeLabel.className = "font-mono font-bold text-sm text-cyan-300";
+                timeLabel.innerText = "15 Ans à 90 Ans";
+            } else {
+                bar.className = "h-full bg-emerald-400 transition-all duration-300";
+                timeLabel.className = "font-mono font-bold text-sm text-emerald-400 font-extrabold";
+                timeLabel.innerText = "2 Milliards à 230 Milliards d'Années !";
+            }
+        }
+
+        function updateCheckItem(id, passed) {
+            const el = document.getElementById(id);
+            if (passed) {
+                el.className = "text-emerald-400 font-bold";
+                el.querySelector('i').className = "fa-solid fa-circle-check mr-1";
+            } else {
+                el.className = "text-slate-500";
+                el.querySelector('i').className = "fa-solid fa-circle-xmark mr-1";
+            }
+        }
+
+        function generateStrongPassword() {
+            sfx.click();
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%^&*";
+            let res = "";
+            for(let i = 0; i < 12; i++) {
+                res += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('m3-password-input').value = res;
+            evaluatePassword();
+        }
+
+        function validateM3Challenge() {
+            const pwd = document.getElementById('m3-password-input').value;
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasLower = /[a-z]/.test(pwd);
+            const hasNumber = /[0-9]/.test(pwd);
+            const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
+            const isPersonal = /1234|azerty|0000|admin|password/i.test(pwd);
+
+            if (pwd.length >= 10 && hasUpper && hasLower && hasNumber && hasSymbol && !isPersonal) {
+                sfx.fanfare();
+                state.completedMissions.m3 = true;
+                updateScore(150);
+                document.getElementById('m3-badge').innerText = "✓ Validé";
+                document.getElementById('m3-badge').className = "text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800";
+                document.getElementById('m3-challenge-status').innerText = "✓ ACCOMPLI";
+                document.getElementById('m3-challenge-status').className = "text-xs text-emerald-400 font-bold";
+                checkOverallProgress();
+                setTimeout(() => showScreen('screen-dashboard'), 1000);
+            } else {
+                sfx.error();
+                alert("Ton mot de passe n'est pas encore assez solide ! Assure-toi d'avoir au moins 10 caractères avec Majuscule, Minuscule, Chiffre et Symbole.");
+            }
+        }
+
+        // MISSION 4 LOGIC
+        function renderM4Case() {
+            if (m4Index >= m4Cases.length) {
+                sfx.fanfare();
+                state.completedMissions.m4 = true;
+                updateScore(150);
+                document.getElementById('m4-badge').innerText = "✓ Validé";
+                document.getElementById('m4-badge').className = "text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800";
+                checkOverallProgress();
+                showScreen('screen-dashboard');
+                return;
+            }
+
+            const c = m4Cases[m4Index];
+            document.getElementById('m4-case-progress').innerText = `Cas ${m4Index + 1} sur ${m4Cases.length}`;
+            document.getElementById('m4-case-title').innerText = c.title;
+            document.getElementById('m4-case-bubble').innerText = `"${c.desc}"`;
+            document.getElementById('m4-feedback-box').classList.add('hidden');
+
+            const grid = document.getElementById('m4-choices-grid');
+            grid.innerHTML = "";
+
+            c.choices.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-rose-400 text-left text-xs font-medium text-slate-200 transition";
+                btn.innerText = opt.text;
+                btn.onclick = () => answerM4(opt.correct, c.explanation);
+                grid.appendChild(btn);
+            });
+        }
+
+        function answerM4(isCorrect, exp) {
+            const box = document.getElementById('m4-feedback-box');
+            box.classList.remove('hidden');
+            if (isCorrect) {
+                sfx.success();
+                box.className = "p-4 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs leading-relaxed";
+                box.innerHTML = `<strong><i class="fa-solid fa-shield-check mr-1"></i> Excellent Réflexe !</strong> ${exp}`;
+                updateScore(30);
+                setTimeout(() => {
+                    m4Index++;
+                    renderM4Case();
+                }, 2200);
+            } else {
+                sfx.error();
+                box.className = "p-4 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs leading-relaxed";
+                box.innerHTML = `<strong><i class="fa-solid fa-triangle-exclamation mr-1"></i> Mauvaise Réaction !</strong> Garde les preuves (captures) et parle toujours à un adulte de confiance ou au 3018.`;
+            }
+        }
+
+        // EXAM LOGIC
+        function launchExam() {
+            sfx.click();
+            examIndex = 0;
+            examScore = 0;
+            document.getElementById('exam-quiz-container').classList.remove('hidden');
+            document.getElementById('certificate-container').classList.add('hidden');
+            renderExamQuestion();
+            showScreen('screen-exam');
+        }
+
+        function renderExamQuestion() {
+            if (examIndex >= examQuestions.length) {
+                finishExam();
+                return;
+            }
+
+            const q = examQuestions[examIndex];
+            document.getElementById('exam-question-number').innerText = `Question ${examIndex + 1} / ${examQuestions.length}`;
+            document.getElementById('exam-question-text').innerText = q.q;
+
+            const grid = document.getElementById('exam-answers-grid');
+            grid.innerHTML = "";
+
+            q.options.forEach((optText, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-400 text-left text-xs font-semibold text-slate-200 transition";
+                btn.innerText = optText;
+                btn.onclick = () => selectExamAnswer(idx);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectExamAnswer(choiceIdx) {
+            const q = examQuestions[examIndex];
+            if (choiceIdx === q.answer) {
+                sfx.success();
+                examScore++;
+            } else {
+                sfx.error();
+            }
+            examIndex++;
+            renderExamQuestion();
+        }
+
+        function finishExam() {
+            sfx.fanfare();
+            document.getElementById('exam-quiz-container').classList.add('hidden');
+            document.getElementById('certificate-container').classList.remove('hidden');
+            
+            document.getElementById('cert-agent-name').innerText = state.playerName;
+            document.getElementById('cert-score').innerText = `${state.score + (examScore * 50)} XP (${examScore}/${examQuestions.length} Réponses Justes)`;
+            state.examPassed = true;
+        }
+
+        function printCertificate() {
+            sfx.click();
+            window.print();
+        }
+
+        function downloadPDF() {
+            sfx.click();
+            const certElement = document.getElementById('certificate-container');
+            const cleanName = (state.playerName || "CyberAgent").replace(/[^a-zA-Z0-9_-]/g, "_");
+
+            const opt = {
+                margin:       10,
+                filename:     `Diplome_CyberAgent_${cleanName}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#0a0e17',
+                    logging: false
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            const noPrintBtns = certElement.querySelector('.no-print');
+            if(noPrintBtns) noPrintBtns.style.display = 'none';
+
+            if (window.html2pdf) {
+                html2pdf().set(opt).from(certElement).save().then(() => {
+                    if(noPrintBtns) noPrintBtns.style.display = 'flex';
+                }).catch(() => {
+                    if(noPrintBtns) noPrintBtns.style.display = 'flex';
+                    window.print();
+                });
+            } else {
+                if(noPrintBtns) noPrintBtns.style.display = 'flex';
+                window.print();
+            }
+        }
+
+        // Initialize view
+        showScreen('screen-welcome');
+    </script>
+</body>
+</html>
